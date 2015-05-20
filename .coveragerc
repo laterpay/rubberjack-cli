@@ -1,0 +1,6 @@
+[run]
+branch = true
+source = rubberjack-cli
+
+[report]
+show_missing = true
