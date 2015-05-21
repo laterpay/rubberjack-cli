@@ -1,0 +1,16 @@
+language: python
+sudo: false
+env:
+    - TOXENV=doc8
+    - TOXENV=flake8
+    - TOXENV=pep257
+    - TOXENV=py27
+    - TOXENV=py32
+    - TOXENV=py33
+    - TOXENV=py34
+install:
+    - pip install tox
+script:
+    - tox -e $TOXENV
+matrix:
+    fast_finish: true
