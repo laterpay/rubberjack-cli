@@ -19,7 +19,6 @@ setup(
 
     # metadata for upload to PyPI
     author='LaterPay GmbH',
-    author_email='django12factor@doismellburning.co.uk',
     url='https://github.com/laterpay/rubberjack-cli',
     description='RubberJack manages (AWS) Elastic Beanstalks',
     long_description=long_description,
