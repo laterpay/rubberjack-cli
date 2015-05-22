@@ -26,6 +26,8 @@ setup(
     keywords='aws',
 
     install_requires=[
+        'boto',
+        'click',
     ],
 
     classifiers=[
