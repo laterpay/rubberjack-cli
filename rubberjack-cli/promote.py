@@ -1,4 +1,5 @@
 import boto.beanstalk.layer1
+import sys
 
 ORGANISATION = "laterpay"
 REGION = "eu-central-1"
@@ -8,20 +9,45 @@ APPLICATION_NAME = "{organisation}-{application}".format(organisation=ORGANISATI
 DEV_ENVIRONMENT_NAME = "{application_name}-dev".format(application_name=APPLICATION_NAME)
 LIVE_ENVIRONMENT_NAME = "{application_name}-live".format(application_name=APPLICATION_NAME)
 
-# Sorry for the jq
-# Pseudocode: the environment in result['Environments'] with EnvironmentName==DEV_ENVIRONMENT_NAME; the VersionLabel of that
-# VERSION_LABEL=$($AWS elasticbeanstalk describe-environments --application-name ${APPLICATION_NAME} | jq --raw-output ".Environments | map(select(.EnvironmentName==\"${DEV_ENVIRONMENT_NAME}\"))[].VersionLabel")
+# Select region
 
 regions = boto.beanstalk.regions()
-region = regions[7]  # Should be eu-central-1; this is a horrible hack I can't work out how to do better easily
+region = None
+for r in regions:
+    if r.name == REGION:
+        region = r
+assert r is not None
+
+# Setup Boto
 
 beanstalk = boto.beanstalk.layer1.Layer1(region=region)
 
-environments = beanstalk.describe_environments(application_name=APPLICATION_NAME)
+# Get environments
 
-import pprint
-pprint.pprint(environments)
+response = beanstalk.describe_environments(application_name=APPLICATION_NAME)
 
-# echo "Deploying $VERSION_LABEL for $APPLICATION_NAME live!"
+environments = response['DescribeEnvironmentsResponse']['DescribeEnvironmentsResult']['Environments']
 
-# $AWS elasticbeanstalk update-environment --environment-name $LIVE_ENVIRONMENT_NAME --version-label ${VERSION_LABEL}
+# Determine versions
+
+dev_version = None
+live_version = None
+for environment in environments:
+    if environment['EnvironmentName'] == LIVE_ENVIRONMENT_NAME:
+        live_version = environment['VersionLabel']
+    if environment['EnvironmentName'] == DEV_ENVIRONMENT_NAME:
+        dev_version = environment['VersionLabel']
+assert live_version is not None
+assert dev_version is not None
+
+# Bail if NOOP
+
+if live_version == dev_version:
+    print("{version} is already live!".format(version=live_version))
+    sys.exit(1)
+
+# Do the things
+
+print("Deploying {new_version} for {app} live, replacing {old_version}!".format(new_version=dev_version, app=APPLICATION_NAME, old_version=live_version))
+
+beanstalk.update_environment(environment_name=LIVE_ENVIRONMENT_NAME, version_label=dev_version)
