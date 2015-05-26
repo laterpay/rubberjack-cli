@@ -1,6 +1,6 @@
 [run]
 branch = true
-source = rubberjack-cli
+source = rubberjackcli
 
 [report]
 fail_under = 100
