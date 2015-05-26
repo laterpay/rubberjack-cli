@@ -11,7 +11,7 @@ import sys
 
 ORGANISATION = "laterpay"
 REGION = "eu-central-1"
-APPLICATION = "peacock"
+APPLICATION = "devnull"
 
 APPLICATION_NAME = "{organisation}-{application}".format(organisation=ORGANISATION, application=APPLICATION)
 DEV_ENVIRONMENT_NAME = "{application_name}-dev".format(application_name=APPLICATION_NAME)
