@@ -1,3 +1,11 @@
+"""
+Deploy a zipfile to Elastic Beanstalk.
+
+Assumes something else has made the zip, which will be at ./deploy.zip, and makes many assumptions about environments and S3 config.
+
+Also full of hard-coded config and duplication, for now.
+"""
+
 import boto
 import boto.beanstalk.layer1
 import subprocess

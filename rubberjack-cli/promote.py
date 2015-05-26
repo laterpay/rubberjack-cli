@@ -1,3 +1,11 @@
+"""
+Promote a version from a dev EB environment to live.
+
+Makes many assumptions about environments and S3 config.
+
+Also full of hard-coded config and duplication, for now.
+"""
+
 import boto.beanstalk.layer1
 import sys
 
