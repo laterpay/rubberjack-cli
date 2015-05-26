@@ -1,28 +1,49 @@
-#!/bin/bash
+import boto
+import boto.beanstalk.layer1
+import subprocess
 
-set -x
-set -e
+ORGANISATION = "laterpay"
+REGION = "eu-central-1"
+APPLICATION = "peacock"
 
-ORG=laterpay
-REGION=eu-central-1
-APPLICATION=dummyapp
+APPLICATION_NAME = "{organisation}-{application}".format(organisation=ORGANISATION, application=APPLICATION)
+DEV_ENVIRONMENT_NAME = "{application_name}-dev".format(application_name=APPLICATION_NAME)
+LIVE_ENVIRONMENT_NAME = "{application_name}-live".format(application_name=APPLICATION_NAME)
 
-COMMIT=$(git rev-parse HEAD)
-TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-VERSION=${TIMESTAMP}-${COMMIT}
+# Select region
 
-AWS="aws --region $REGION"
-BUCKET=${ORG}-rubberjack-ebdeploy
-KEY_PREFIX=dev/${APPLICATION}
-KEY=${KEY_PREFIX}/${VERSION}.zip
+regions = boto.beanstalk.regions()
+region = None
+for r in regions:
+    if r.name == REGION:
+        region = r
+assert r is not None
 
-APPLICATION_NAME=${ORG}-${APPLICATION}
-ENVIRONMENT_NAME=${APPLICATION_NAME}-dev
+# Setup Boto
 
-rm -f deploy.zip
-rm -rf _site
+beanstalk = boto.beanstalk.layer1.Layer1(region=region)
+s3 = boto.connect_s3()
 
-zip -r deploy.zip ./* .ebextensions
-$AWS s3 cp deploy.zip "s3://${BUCKET}/${KEY}"
-$AWS elasticbeanstalk create-application-version --application-name $APPLICATION_NAME --version-label "$VERSION" --source-bundle "S3Bucket=${BUCKET},S3Key=${KEY}"
-$AWS elasticbeanstalk update-environment --environment-name $ENVIRONMENT_NAME --version-label "$VERSION"
+# Extract deployable info
+
+COMMIT = subprocess.check_output(["git", "rev-parse", "HEAD"])
+TIMESTAMP = subprocess.check_output(["date", "+%Y%m%d-%H%M%S"])
+VERSION = "{timestamp}-{commit}".format(timestamp=TIMESTAMP, commit=COMMIT)
+
+BUCKET = "{organisation}-rubberjack-ebdeploy".format(organisation=ORGANISATION)
+KEY_PREFIX = "dev/{application}".format(application=APPLICATION)
+KEY = "{prefix}/{version}.zip".format(prefix=KEY_PREFIX, version=VERSION)
+
+# Upload to S3
+
+bucket = s3.get_bucket(BUCKET)
+key = s3.new_key(KEY)
+key.set_contents_from_filename('deploy.zip')
+
+# Create version
+
+beanstalk.create_application_version(application_name=APPLICATION_NAME, version_label=VERSION, s3_bucket=BUCKET, s3_key=KEY)
+
+# Deploy
+
+beanstalk.update_environment(environment_name=LIVE_ENVIRONMENT_NAME, version_label=VERSION)
