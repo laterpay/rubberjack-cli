@@ -45,7 +45,7 @@ KEY = "{prefix}/{version}.zip".format(prefix=KEY_PREFIX, version=VERSION)
 # Upload to S3
 
 bucket = s3.get_bucket(BUCKET)
-key = s3.new_key(KEY)
+key = bucket.new_key(KEY)
 key.set_contents_from_filename('deploy.zip')
 
 # Create version
