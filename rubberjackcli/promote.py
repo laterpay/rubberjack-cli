@@ -26,36 +26,41 @@ for r in regions:
         region = r
 assert r is not None
 
-# Setup Boto
+def promote():
+    # Setup Boto
 
-beanstalk = boto.beanstalk.layer1.Layer1(region=region)
+    beanstalk = boto.beanstalk.layer1.Layer1(region=region)
 
-# Get environments
+    # Get environments
 
-response = beanstalk.describe_environments(application_name=APPLICATION_NAME)
+    response = beanstalk.describe_environments(application_name=APPLICATION_NAME)
 
-environments = response['DescribeEnvironmentsResponse']['DescribeEnvironmentsResult']['Environments']
+    environments = response['DescribeEnvironmentsResponse']['DescribeEnvironmentsResult']['Environments']
 
-# Determine versions
+    # Determine versions
 
-dev_version = None
-live_version = None
-for environment in environments:
-    if environment['EnvironmentName'] == LIVE_ENVIRONMENT_NAME:
-        live_version = environment['VersionLabel']
-    if environment['EnvironmentName'] == DEV_ENVIRONMENT_NAME:
-        dev_version = environment['VersionLabel']
-assert live_version is not None
-assert dev_version is not None
+    dev_version = None
+    live_version = None
+    for environment in environments:
+        if environment['EnvironmentName'] == LIVE_ENVIRONMENT_NAME:
+            live_version = environment['VersionLabel']
+        if environment['EnvironmentName'] == DEV_ENVIRONMENT_NAME:
+            dev_version = environment['VersionLabel']
+    assert live_version is not None
+    assert dev_version is not None
 
-# Bail if NOOP
+    # Bail if NOOP
 
-if live_version == dev_version:
-    print("{version} is already live!".format(version=live_version))
-    sys.exit(1)
+    if live_version == dev_version:
+        print("{version} is already live!".format(version=live_version))
+        sys.exit(1)
 
-# Do the things
+    # Do the things
 
-print("Deploying {new_version} for {app} live, replacing {old_version}!".format(new_version=dev_version, app=APPLICATION_NAME, old_version=live_version))
+    print("Deploying {new_version} for {app} live, replacing {old_version}!".format(new_version=dev_version, app=APPLICATION_NAME, old_version=live_version))
 
-beanstalk.update_environment(environment_name=LIVE_ENVIRONMENT_NAME, version_label=dev_version)
+    beanstalk.update_environment(environment_name=LIVE_ENVIRONMENT_NAME, version_label=dev_version)
+
+
+if __name__ == '__main__':  # pragma: no cover
+    promote()

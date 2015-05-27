@@ -27,31 +27,36 @@ for r in regions:
         region = r
 assert r is not None
 
-# Setup Boto
+def deploy():
+    # Setup Boto
 
-beanstalk = boto.beanstalk.layer1.Layer1(region=region)
-s3 = boto.connect_s3()
+    beanstalk = boto.beanstalk.layer1.Layer1(region=region)
+    s3 = boto.connect_s3()
 
-# Extract deployable info
+    # Extract deployable info
 
-COMMIT = subprocess.check_output(["git", "rev-parse", "HEAD"])
-TIMESTAMP = subprocess.check_output(["date", "+%Y%m%d-%H%M%S"])
-VERSION = "{timestamp}-{commit}".format(timestamp=TIMESTAMP, commit=COMMIT)
+    COMMIT = subprocess.check_output(["git", "rev-parse", "HEAD"])
+    TIMESTAMP = subprocess.check_output(["date", "+%Y%m%d-%H%M%S"])
+    VERSION = "{timestamp}-{commit}".format(timestamp=TIMESTAMP, commit=COMMIT)
 
-BUCKET = "{organisation}-rubberjack-ebdeploy".format(organisation=ORGANISATION)
-KEY_PREFIX = "dev/{application}".format(application=APPLICATION)
-KEY = "{prefix}/{version}.zip".format(prefix=KEY_PREFIX, version=VERSION)
+    BUCKET = "{organisation}-rubberjack-ebdeploy".format(organisation=ORGANISATION)
+    KEY_PREFIX = "dev/{application}".format(application=APPLICATION)
+    KEY = "{prefix}/{version}.zip".format(prefix=KEY_PREFIX, version=VERSION)
 
-# Upload to S3
+    # Upload to S3
 
-bucket = s3.get_bucket(BUCKET)
-key = bucket.new_key(KEY)
-key.set_contents_from_filename('deploy.zip')
+    bucket = s3.get_bucket(BUCKET)
+    key = bucket.new_key(KEY)
+    key.set_contents_from_filename('deploy.zip')
 
-# Create version
+    # Create version
 
-beanstalk.create_application_version(application_name=APPLICATION_NAME, version_label=VERSION, s3_bucket=BUCKET, s3_key=KEY)
+    beanstalk.create_application_version(application_name=APPLICATION_NAME, version_label=VERSION, s3_bucket=BUCKET, s3_key=KEY)
 
-# Deploy
+    # Deploy
 
-beanstalk.update_environment(environment_name=LIVE_ENVIRONMENT_NAME, version_label=VERSION)
+    beanstalk.update_environment(environment_name=LIVE_ENVIRONMENT_NAME, version_label=VERSION)
+
+
+if __name__ == '__main__':  # pragma: no cover
+    deploy()

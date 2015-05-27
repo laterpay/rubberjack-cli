@@ -3,6 +3,9 @@ import mock
 import moto
 import unittest
 
+from rubberjackcli.promote import promote
+from rubberjackcli.deploy import deploy
+
 
 class CLITests(unittest.TestCase):
 
@@ -13,7 +16,7 @@ class CLITests(unittest.TestCase):
         s3 = boto.connect_s3()
         s3.create_bucket("laterpay-rubberjack-ebdeploy")  # FIXME Remove hardcoded bucket name
 
-        import rubberjackcli.deploy  # noqa
+        deploy()
 
     @moto.mock_s3
     @mock.patch('boto.beanstalk.layer1.Layer1.describe_environments')
@@ -36,4 +39,30 @@ class CLITests(unittest.TestCase):
             },
         }
 
-        import rubberjackcli.promote  # noqa
+        promote()
+
+    @moto.mock_s3
+    @mock.patch('sys.exit')
+    @mock.patch('boto.beanstalk.layer1.Layer1.describe_environments')
+    @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
+    def test_promoting_same_version(self, ue, de, se):
+        de.return_value = {
+            'DescribeEnvironmentsResponse': {
+                'DescribeEnvironmentsResult': {
+                    'Environments': [
+                        {
+                            'EnvironmentName': 'laterpay-devnull-live',  # FIXME Remove hardcoded EnvName
+                            'VersionLabel': 'same',
+                        },
+                        {
+                            'EnvironmentName': 'laterpay-devnull-dev',  # FIXME Remove hardcoded EnvName
+                            'VersionLabel': 'same',
+                        },
+                    ],
+                },
+            },
+        }
+
+        promote()
+
+        self.assertTrue(se.called)
