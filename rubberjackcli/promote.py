@@ -26,7 +26,14 @@ for r in regions:
         region = r
 assert r is not None
 
+
 def promote():
+    """
+    Do the actual deployment work.
+
+    (See the module-level docstring for more details and caveats)
+    """
+
     # Setup Boto
 
     beanstalk = boto.beanstalk.layer1.Layer1(region=region)
