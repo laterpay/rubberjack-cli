@@ -10,22 +10,7 @@ import boto
 import boto.beanstalk.layer1
 import subprocess
 
-ORGANISATION = "laterpay"
-REGION = "eu-central-1"
-APPLICATION = "devnull"
-
-APPLICATION_NAME = "{organisation}-{application}".format(organisation=ORGANISATION, application=APPLICATION)
-DEV_ENVIRONMENT_NAME = "{application_name}-dev".format(application_name=APPLICATION_NAME)
-LIVE_ENVIRONMENT_NAME = "{application_name}-live".format(application_name=APPLICATION_NAME)
-
-# Select region
-
-regions = boto.beanstalk.regions()
-region = None
-for r in regions:
-    if r.name == REGION:
-        region = r
-assert r is not None
+from .config import *  # noqa
 
 
 def deploy():
@@ -46,7 +31,6 @@ def deploy():
     TIMESTAMP = subprocess.check_output(["date", "+%Y%m%d-%H%M%S"])
     VERSION = "{timestamp}-{commit}".format(timestamp=TIMESTAMP, commit=COMMIT)
 
-    BUCKET = "{organisation}-rubberjack-ebdeploy".format(organisation=ORGANISATION)
     KEY_PREFIX = "dev/{application}".format(application=APPLICATION)
     KEY = "{prefix}/{version}.zip".format(prefix=KEY_PREFIX, version=VERSION)
 

@@ -9,22 +9,7 @@ Also full of hard-coded config and duplication, for now.
 import boto.beanstalk.layer1
 import sys
 
-ORGANISATION = "laterpay"
-REGION = "eu-central-1"
-APPLICATION = "devnull"
-
-APPLICATION_NAME = "{organisation}-{application}".format(organisation=ORGANISATION, application=APPLICATION)
-DEV_ENVIRONMENT_NAME = "{application_name}-dev".format(application_name=APPLICATION_NAME)
-LIVE_ENVIRONMENT_NAME = "{application_name}-live".format(application_name=APPLICATION_NAME)
-
-# Select region
-
-regions = boto.beanstalk.regions()
-region = None
-for r in regions:
-    if r.name == REGION:
-        region = r
-assert r is not None
+from .config import *  # noqa
 
 
 def promote():
