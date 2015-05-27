@@ -27,31 +27,43 @@ for r in regions:
         region = r
 assert r is not None
 
-# Setup Boto
 
-beanstalk = boto.beanstalk.layer1.Layer1(region=region)
-s3 = boto.connect_s3()
+def deploy():
+    """
+    Do the actual deployment work.
 
-# Extract deployable info
+    (See the module-level docstring for more details and caveats)
+    """
 
-COMMIT = subprocess.check_output(["git", "rev-parse", "HEAD"])
-TIMESTAMP = subprocess.check_output(["date", "+%Y%m%d-%H%M%S"])
-VERSION = "{timestamp}-{commit}".format(timestamp=TIMESTAMP, commit=COMMIT)
+    # Setup Boto
 
-BUCKET = "{organisation}-rubberjack-ebdeploy".format(organisation=ORGANISATION)
-KEY_PREFIX = "dev/{application}".format(application=APPLICATION)
-KEY = "{prefix}/{version}.zip".format(prefix=KEY_PREFIX, version=VERSION)
+    beanstalk = boto.beanstalk.layer1.Layer1(region=region)
+    s3 = boto.connect_s3()
 
-# Upload to S3
+    # Extract deployable info
 
-bucket = s3.get_bucket(BUCKET)
-key = s3.new_key(KEY)
-key.set_contents_from_filename('deploy.zip')
+    COMMIT = subprocess.check_output(["git", "rev-parse", "HEAD"])
+    TIMESTAMP = subprocess.check_output(["date", "+%Y%m%d-%H%M%S"])
+    VERSION = "{timestamp}-{commit}".format(timestamp=TIMESTAMP, commit=COMMIT)
 
-# Create version
+    BUCKET = "{organisation}-rubberjack-ebdeploy".format(organisation=ORGANISATION)
+    KEY_PREFIX = "dev/{application}".format(application=APPLICATION)
+    KEY = "{prefix}/{version}.zip".format(prefix=KEY_PREFIX, version=VERSION)
 
-beanstalk.create_application_version(application_name=APPLICATION_NAME, version_label=VERSION, s3_bucket=BUCKET, s3_key=KEY)
+    # Upload to S3
 
-# Deploy
+    bucket = s3.get_bucket(BUCKET)
+    key = bucket.new_key(KEY)
+    key.set_contents_from_filename('deploy.zip')
 
-beanstalk.update_environment(environment_name=LIVE_ENVIRONMENT_NAME, version_label=VERSION)
+    # Create version
+
+    beanstalk.create_application_version(application_name=APPLICATION_NAME, version_label=VERSION, s3_bucket=BUCKET, s3_key=KEY)
+
+    # Deploy
+
+    beanstalk.update_environment(environment_name=LIVE_ENVIRONMENT_NAME, version_label=VERSION)
+
+
+if __name__ == '__main__':  # pragma: no cover
+    deploy()
