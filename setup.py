@@ -41,4 +41,11 @@ setup(
         "Programming Language :: Python :: 3.4",
     ],
 
+    entry_points={
+        'console_scripts': [
+            'deploy=rubberjackcli.deploy:deploy',
+            'promote=rubberjackcli.promote:promote',
+        ],
+    },
+
 )

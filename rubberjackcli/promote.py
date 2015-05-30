@@ -52,7 +52,3 @@ def promote():
     print("Deploying {new_version} for {app} live, replacing {old_version}!".format(new_version=dev_version, app=APPLICATION_NAME, old_version=live_version))
 
     beanstalk.update_environment(environment_name=LIVE_ENVIRONMENT_NAME, version_label=dev_version)
-
-
-if __name__ == '__main__':  # pragma: no cover
-    promote()

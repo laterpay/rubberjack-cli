@@ -47,7 +47,3 @@ def deploy():
     # Deploy
 
     beanstalk.update_environment(environment_name=LIVE_ENVIRONMENT_NAME, version_label=VERSION)
-
-
-if __name__ == '__main__':  # pragma: no cover
-    deploy()
