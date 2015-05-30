@@ -8,9 +8,12 @@ Also full of hard-coded config and duplication, for now.
 
 import boto
 import boto.beanstalk.layer1
+import logging
 import subprocess
 
 from .config import *  # noqa
+
+_logger = logging.getLogger(__name__)
 
 
 def deploy():
@@ -19,6 +22,8 @@ def deploy():
 
     (See the module-level docstring for more details and caveats)
     """
+
+    _logger.info("Deploying {application}".format(application=APPLICATION))
 
     # Setup Boto
 
