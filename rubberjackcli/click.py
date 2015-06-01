@@ -17,7 +17,6 @@ import click
 _logger = logging.getLogger(__name__)
 
 ORGANISATION = "laterpay"
-REGION = "eu-central-1"
 APPLICATION = "devnull"
 
 APPLICATION_NAME = "{organisation}-{application}".format(organisation=ORGANISATION, application=APPLICATION)
@@ -43,13 +42,18 @@ def region_from_name(region_name):
 
 
 @click.group()
+@click.option('--application', help="TODO")
+@click.option('--organisation', help="TODO")
+@click.option('--region', help="TODO", default="eu-central-1")
 @click.pass_context
-def rubberjack(ctx):
+def rubberjack(ctx, application, organisation, region):
     """
     Main entry point into the rubberjack CLI.
     """
 
-    pass
+    ctx.obj = {}
+
+    ctx.obj['region'] = region_from_name(region)
 
 
 @rubberjack.command()
@@ -65,7 +69,7 @@ def deploy(ctx):
 
     # Setup Boto
 
-    beanstalk = boto.beanstalk.layer1.Layer1(region=region_from_name(REGION))
+    beanstalk = boto.beanstalk.layer1.Layer1(region=ctx.obj['region'])
     s3 = boto.connect_s3()
 
     # Extract deployable info
@@ -105,7 +109,7 @@ def promote(ctx):
 
     # Setup Boto
 
-    beanstalk = boto.beanstalk.layer1.Layer1(region=region_from_name(REGION))
+    beanstalk = boto.beanstalk.layer1.Layer1(region=ctx.obj['region'])
 
     # Get environments
 
