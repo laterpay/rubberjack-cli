@@ -35,7 +35,7 @@ def region_from_name(region_name):
     regions = boto.beanstalk.regions()
     region = None
     for r in regions:
-        if r.name == REGION:
+        if r.name == region_name:
             region = r
     assert region is not None
 
