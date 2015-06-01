@@ -4,12 +4,15 @@ Command-line tooling for RubberJack.
 https://github.com/laterpay/rubberjack
 """
 
+from __future__ import absolute_import
+
 import logging
 import subprocess
 import sys
 
 import boto
 import boto.beanstalk.layer1
+import click
 
 _logger = logging.getLogger(__name__)
 
