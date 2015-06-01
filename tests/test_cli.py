@@ -3,8 +3,8 @@ import mock
 import moto
 import unittest
 
-from rubberjackcli.promote import promote
-from rubberjackcli.deploy import deploy
+from rubberjackcli.click import promote
+from rubberjackcli.click import deploy
 
 
 class CLITests(unittest.TestCase):
