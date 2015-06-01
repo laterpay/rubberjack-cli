@@ -42,7 +42,19 @@ def region_from_name(region_name):
     return region
 
 
-def deploy():
+@click.group()
+@click.pass_context
+def rubberjack(ctx):
+    """
+    Main entry point into the rubberjack CLI.
+    """
+
+    pass
+
+
+@rubberjack.command()
+@click.pass_context
+def deploy(ctx):
     """
     Do the actual deployment work.
 
@@ -80,7 +92,9 @@ def deploy():
     beanstalk.update_environment(environment_name=LIVE_ENVIRONMENT_NAME, version_label=VERSION)
 
 
-def promote():
+@rubberjack.command()
+@click.pass_context
+def promote(ctx):
     """
     Do the actual deployment work.
 

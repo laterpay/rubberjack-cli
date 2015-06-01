@@ -43,8 +43,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'deploy=rubberjackcli.click:deploy',
-            'promote=rubberjackcli.click:promote',
+            'rubberjack=rubberjackcli.click:rubberjack',
         ],
     },
 
