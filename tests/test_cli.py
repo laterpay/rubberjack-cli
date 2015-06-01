@@ -17,7 +17,7 @@ class CLITests(unittest.TestCase):
         s3 = boto.connect_s3()
         s3.create_bucket("laterpay-rubberjack-ebdeploy")  # FIXME Remove hardcoded bucket name
 
-        CliRunner().invoke(rubberjack, ['deploy'])
+        CliRunner().invoke(rubberjack, ['deploy'], catch_exceptions=False)
 
     @moto.mock_s3
     @mock.patch('boto.beanstalk.layer1.Layer1.describe_environments')
@@ -40,7 +40,7 @@ class CLITests(unittest.TestCase):
             },
         }
 
-        CliRunner().invoke(rubberjack, ['promote'])
+        CliRunner().invoke(rubberjack, ['promote'], catch_exceptions=False)
 
     @moto.mock_s3
     @mock.patch('sys.exit')
@@ -64,6 +64,6 @@ class CLITests(unittest.TestCase):
             },
         }
 
-        CliRunner().invoke(rubberjack, ['promote'])
+        CliRunner().invoke(rubberjack, ['promote'], catch_exceptions=False)
 
         self.assertTrue(se.called)
