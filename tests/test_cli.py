@@ -3,8 +3,9 @@ import mock
 import moto
 import unittest
 
-from rubberjackcli.promote import promote
-from rubberjackcli.deploy import deploy
+from click.testing import CliRunner
+
+from rubberjackcli.click import rubberjack
 
 
 class CLITests(unittest.TestCase):
@@ -16,7 +17,7 @@ class CLITests(unittest.TestCase):
         s3 = boto.connect_s3()
         s3.create_bucket("laterpay-rubberjack-ebdeploy")  # FIXME Remove hardcoded bucket name
 
-        deploy()
+        CliRunner().invoke(rubberjack, ['deploy'], catch_exceptions=False)
 
     @moto.mock_s3
     @mock.patch('boto.beanstalk.layer1.Layer1.describe_environments')
@@ -39,7 +40,7 @@ class CLITests(unittest.TestCase):
             },
         }
 
-        promote()
+        CliRunner().invoke(rubberjack, ['promote'], catch_exceptions=False)
 
     @moto.mock_s3
     @mock.patch('sys.exit')
@@ -63,6 +64,6 @@ class CLITests(unittest.TestCase):
             },
         }
 
-        promote()
+        CliRunner().invoke(rubberjack, ['promote'], catch_exceptions=False)
 
         self.assertTrue(se.called)
