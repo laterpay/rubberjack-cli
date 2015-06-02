@@ -16,15 +16,6 @@ import click
 
 _logger = logging.getLogger(__name__)
 
-ORGANISATION = "laterpay"
-APPLICATION = "devnull"
-
-APPLICATION_NAME = "{organisation}-{application}".format(organisation=ORGANISATION, application=APPLICATION)
-DEV_ENVIRONMENT_NAME = "{application_name}-dev".format(application_name=APPLICATION_NAME)
-LIVE_ENVIRONMENT_NAME = "{application_name}-live".format(application_name=APPLICATION_NAME)
-
-BUCKET = "{organisation}-rubberjack-ebdeploy".format(organisation=ORGANISATION)
-
 
 def region_from_name(region_name):
     """
@@ -42,8 +33,8 @@ def region_from_name(region_name):
 
 
 @click.group()
-@click.option('--application', help="TODO")
-@click.option('--organisation', help="TODO")
+@click.option('--application', help="TODO", default="devnull")
+@click.option('--organisation', help="TODO", default="laterpay")
 @click.option('--region', help="TODO", default="eu-central-1")
 @click.pass_context
 def rubberjack(ctx, application, organisation, region):
@@ -53,7 +44,18 @@ def rubberjack(ctx, application, organisation, region):
 
     ctx.obj = {}
 
+    ctx.obj['application'] = application
+    ctx.obj['organisation'] = organisation
     ctx.obj['region'] = region_from_name(region)
+    ctx.obj['application_name'] = application_name = "{organisation}-{application}".format(organisation=organisation, application=application)
+
+    ctx.obj['dev_environment_name'] = "{application_name}-dev".format(application_name=application_name)
+    ctx.obj['live_environment_name'] = "{application_name}-live".format(application_name=application_name)
+
+    ctx.obj['bucket'] = "{organisation}-rubberjack-ebdeploy".format(organisation=organisation)
+
+    ctx.obj['s3'] = boto.connect_s3()
+    ctx.obj['beanstalk'] = boto.beanstalk.layer1.Layer1(region=ctx.obj['region'])
 
 
 @rubberjack.command()
@@ -65,12 +67,11 @@ def deploy(ctx):
     (See the module-level docstring for more details and caveats)
     """
 
+    APPLICATION = ctx.obj['application']
+    beanstalk = ctx.obj['beanstalk']
+    s3 = ctx.obj['s3']
+
     _logger.info("Deploying {application}".format(application=APPLICATION))
-
-    # Setup Boto
-
-    beanstalk = boto.beanstalk.layer1.Layer1(region=ctx.obj['region'])
-    s3 = boto.connect_s3()
 
     # Extract deployable info
 
@@ -83,17 +84,17 @@ def deploy(ctx):
 
     # Upload to S3
 
-    bucket = s3.get_bucket(BUCKET)
+    bucket = s3.get_bucket(ctx.obj['bucket'])
     key = bucket.new_key(KEY)
     key.set_contents_from_filename('deploy.zip')
 
     # Create version
 
-    beanstalk.create_application_version(application_name=APPLICATION_NAME, version_label=VERSION, s3_bucket=BUCKET, s3_key=KEY)
+    beanstalk.create_application_version(application_name=ctx.obj['application_name'], version_label=VERSION, s3_bucket=ctx.obj['bucket'], s3_key=KEY)
 
     # Deploy
 
-    beanstalk.update_environment(environment_name=LIVE_ENVIRONMENT_NAME, version_label=VERSION)
+    beanstalk.update_environment(environment_name=ctx.obj['dev_environment_name'], version_label=VERSION)
 
 
 @rubberjack.command()
@@ -105,11 +106,13 @@ def promote(ctx):
     (See the module-level docstring for more details and caveats)
     """
 
+    beanstalk = ctx.obj['beanstalk']
+    APPLICATION = ctx.obj['application']
+    APPLICATION_NAME = ctx.obj['application_name']
+    DEV_ENVIRONMENT_NAME = ctx.obj['dev_environment_name']
+    LIVE_ENVIRONMENT_NAME = ctx.obj['live_environment_name']
+
     _logger.info("Promoting {application} dev version to live".format(application=APPLICATION))
-
-    # Setup Boto
-
-    beanstalk = boto.beanstalk.layer1.Layer1(region=ctx.obj['region'])
 
     # Get environments
 
