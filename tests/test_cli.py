@@ -1,6 +1,7 @@
 import boto
 import mock
 import moto
+import tempfile
 import unittest
 
 from click.testing import CliRunner
@@ -17,7 +18,10 @@ class CLITests(unittest.TestCase):
         s3 = boto.connect_s3()
         s3.create_bucket("laterpay-rubberjack-ebdeploy")  # FIXME Remove hardcoded bucket name
 
-        CliRunner().invoke(rubberjack, ['deploy'], catch_exceptions=False)
+        with tempfile.NamedTemporaryFile() as tmp:
+            result = CliRunner().invoke(rubberjack, ['deploy', tmp.name], catch_exceptions=False)
+
+            self.assertEquals(result.exit_code, 0, result.output)
 
     @moto.mock_s3
     @mock.patch('boto.beanstalk.layer1.Layer1.describe_environments')

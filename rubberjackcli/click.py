@@ -59,8 +59,9 @@ def rubberjack(ctx, application, organisation, region):
 
 
 @rubberjack.command()
+@click.argument('filename', default="./deploy.zip", type=click.Path(exists=True))
 @click.pass_context
-def deploy(ctx):
+def deploy(ctx, filename):
     """
     Do the actual deployment work.
 
@@ -86,7 +87,7 @@ def deploy(ctx):
 
     bucket = s3.get_bucket(ctx.obj['bucket'])
     key = bucket.new_key(KEY)
-    key.set_contents_from_filename('deploy.zip')
+    key.set_contents_from_filename(filename)
 
     # Create version
 
