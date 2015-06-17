@@ -14,6 +14,7 @@ import boto
 import boto.beanstalk.layer1
 import click
 
+logging.basicConfig(level=logging.INFO)
 _logger = logging.getLogger(__name__)
 
 
