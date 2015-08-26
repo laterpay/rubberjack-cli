@@ -88,8 +88,8 @@ def deploy(ctx, environment, filename):
 
     # Extract deployable info
 
-    COMMIT = subprocess.check_output(["git", "rev-parse", "HEAD"])
-    TIMESTAMP = subprocess.check_output(["date", "+%Y%m%d-%H%M%S"])
+    COMMIT = subprocess.check_output(["git", "rev-parse", "HEAD"]).strip()
+    TIMESTAMP = subprocess.check_output(["date", "+%Y%m%d-%H%M%S"]).strip()
     VERSION = "{timestamp}-{commit}".format(timestamp=TIMESTAMP, commit=COMMIT)
 
     KEY_PREFIX = "dev/{application}".format(application=APPLICATION)
