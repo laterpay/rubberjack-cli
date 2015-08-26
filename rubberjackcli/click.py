@@ -67,9 +67,10 @@ def rubberjack(ctx, application, organisation, region, sigv4_host):
 
 
 @rubberjack.command()
+@click.option('--environment', default=None)
 @click.argument('filename', default="./deploy.zip", type=click.Path(exists=True))
 @click.pass_context
-def deploy(ctx, filename):
+def deploy(ctx, environment, filename):
     """
     Do the actual deployment work.
 
@@ -80,7 +81,10 @@ def deploy(ctx, filename):
     beanstalk = ctx.obj['beanstalk']
     s3 = ctx.obj['s3']
 
-    _logger.info("Deploying {application}".format(application=APPLICATION))
+    if not environment:
+        environment = ctx.obj['dev_environment_name']
+
+    _logger.info("Deploying {application} to {environment}".format(application=APPLICATION, environment=environment))
 
     # Extract deployable info
 
@@ -103,7 +107,7 @@ def deploy(ctx, filename):
 
     # Deploy
 
-    beanstalk.update_environment(environment_name=ctx.obj['dev_environment_name'], version_label=VERSION)
+    beanstalk.update_environment(environment_name=environment, version_label=VERSION)
 
 
 @rubberjack.command()
