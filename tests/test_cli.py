@@ -75,3 +75,15 @@ class CLITests(unittest.TestCase):
     @moto.mock_s3
     def test_sigv4(self):
         CliRunner().invoke(rubberjack, ['--sigv4-host', 'foo', 'deploy'], catch_exceptions=False)
+
+    @moto.mock_s3
+    @mock.patch('boto.beanstalk.layer1.Layer1.create_application_version')
+    @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
+    def test_deploy_to_custom_environment(self, cav, ue):
+        s3 = boto.connect_s3()
+        s3.create_bucket("laterpay-rubberjack-ebdeploy")  # FIXME Remove hardcoded bucket name
+
+        with tempfile.NamedTemporaryFile() as tmp:
+            result = CliRunner().invoke(rubberjack, ['deploy', '--environment', 'wibble', tmp.name], catch_exceptions=False)
+
+            self.assertEquals(result.exit_code, 0, result.output)
