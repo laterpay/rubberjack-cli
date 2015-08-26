@@ -26,6 +26,8 @@ setup(
     keywords='aws',
 
     install_requires=[
+        'boto',
+        'click',
     ],
 
     classifiers=[
@@ -38,5 +40,11 @@ setup(
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
     ],
+
+    entry_points={
+        'console_scripts': [
+            'rubberjack=rubberjackcli.click:rubberjack',
+        ],
+    },
 
 )
