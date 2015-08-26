@@ -12,6 +12,7 @@ import sys
 
 import boto
 import boto.beanstalk.layer1
+import boto.s3.connection
 import click
 
 logging.basicConfig(level=logging.INFO)
@@ -37,8 +38,9 @@ def region_from_name(region_name):
 @click.option('--application', help="TODO", default="devnull")
 @click.option('--organisation', help="TODO", default="laterpay")
 @click.option('--region', help="TODO", default="eu-central-1")
+@click.option('--sigv4-host', help="TODO", default=None)
 @click.pass_context
-def rubberjack(ctx, application, organisation, region):
+def rubberjack(ctx, application, organisation, region, sigv4_host):
     """
     Main entry point into the rubberjack CLI.
     """
@@ -55,7 +57,12 @@ def rubberjack(ctx, application, organisation, region):
 
     ctx.obj['bucket'] = "{organisation}-rubberjack-ebdeploy".format(organisation=organisation)
 
-    ctx.obj['s3'] = boto.connect_s3()
+    # boto doesn't use a default of None, it uses NoHostProvided, and I struggled to pass that myself
+    if sigv4_host:
+        s3 = boto.connect_s3(host=sigv4_host)
+    else:
+        s3 = boto.connect_s3()
+    ctx.obj['s3'] = s3
     ctx.obj['beanstalk'] = boto.beanstalk.layer1.Layer1(region=ctx.obj['region'])
 
 
