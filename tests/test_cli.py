@@ -71,3 +71,7 @@ class CLITests(unittest.TestCase):
         CliRunner().invoke(rubberjack, ['promote'], catch_exceptions=False)
 
         self.assertTrue(se.called)
+
+    @moto.mock_s3
+    def test_sigv4(self):
+        CliRunner().invoke(rubberjack, ['--sigv4-host', 'foo', 'deploy'], catch_exceptions=False)
