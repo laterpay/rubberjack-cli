@@ -87,3 +87,29 @@ class CLITests(unittest.TestCase):
             result = CliRunner().invoke(rubberjack, ['deploy', '--environment', 'wibble', tmp.name], catch_exceptions=False)
 
             self.assertEquals(result.exit_code, 0, result.output)
+
+    @moto.mock_s3
+    @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
+    @mock.patch('boto.beanstalk.layer1.Layer1.describe_environments')
+    def test_promote_to_custom_environment(self, de, ue):
+        CUSTOM_TO_ENVIRONMENT = "loremipsum"
+
+        de.return_value = {
+            'DescribeEnvironmentsResponse': {
+                'DescribeEnvironmentsResult': {
+                    'Environments': [
+                        {
+                            'EnvironmentName': CUSTOM_TO_ENVIRONMENT,
+                            'VersionLabel': 'old',
+                        },
+                        {
+                            'EnvironmentName': 'laterpay-devnull-dev',  # FIXME Remove hardcoded EnvName
+                            'VersionLabel': 'new',
+                        },
+                    ],
+                },
+            },
+        }
+
+        result = CliRunner().invoke(rubberjack, ['promote', '--to-environment', CUSTOM_TO_ENVIRONMENT], catch_exceptions=False)
+        self.assertEquals(result.exit_code, 0, result.output)
