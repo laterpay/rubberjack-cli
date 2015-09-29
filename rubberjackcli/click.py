@@ -111,8 +111,9 @@ def deploy(ctx, environment, filename):
 
 
 @rubberjack.command()
+@click.option('--to-environment', default=None)
 @click.pass_context
-def promote(ctx):
+def promote(ctx, to_environment):
     """
     Do the actual deployment work.
 
@@ -125,7 +126,10 @@ def promote(ctx):
     DEV_ENVIRONMENT_NAME = ctx.obj['dev_environment_name']
     LIVE_ENVIRONMENT_NAME = ctx.obj['live_environment_name']
 
-    _logger.info("Promoting {application} dev version to live".format(application=APPLICATION))
+    if to_environment is None:
+        to_environment = LIVE_ENVIRONMENT_NAME
+
+    _logger.info("Promoting {application} dev version to {to_environment}".format(application=APPLICATION, to_environment=to_environment))
 
     # Get environments
 
@@ -138,7 +142,7 @@ def promote(ctx):
     dev_version = None
     live_version = None
     for environment in environments:
-        if environment['EnvironmentName'] == LIVE_ENVIRONMENT_NAME:
+        if environment['EnvironmentName'] == to_environment:
             live_version = environment['VersionLabel']
         if environment['EnvironmentName'] == DEV_ENVIRONMENT_NAME:
             dev_version = environment['VersionLabel']
