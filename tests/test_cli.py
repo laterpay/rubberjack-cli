@@ -11,6 +11,19 @@ from rubberjackcli.click import rubberjack
 
 class CLITests(unittest.TestCase):
 
+    def _describe_environments(self, env_pairs):
+        envs = [{'EnvironmentName': name, 'VersionLabel': label} for (name, label) in env_pairs]
+
+        return_value = {
+            'DescribeEnvironmentsResponse': {
+                'DescribeEnvironmentsResult': {
+                    'Environments': envs,
+                 },
+            },
+        }
+
+        return return_value
+
     @moto.mock_s3
     @mock.patch('boto.beanstalk.layer1.Layer1.create_application_version')
     @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
@@ -27,22 +40,11 @@ class CLITests(unittest.TestCase):
     @mock.patch('boto.beanstalk.layer1.Layer1.describe_environments')
     @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
     def test_promote(self, ue, de):
-        de.return_value = {
-            'DescribeEnvironmentsResponse': {
-                'DescribeEnvironmentsResult': {
-                    'Environments': [
-                        {
-                            'EnvironmentName': 'laterpay-devnull-live',  # FIXME Remove hardcoded EnvName
-                            'VersionLabel': 'old',
-                        },
-                        {
-                            'EnvironmentName': 'laterpay-devnull-dev',  # FIXME Remove hardcoded EnvName
-                            'VersionLabel': 'new',
-                        },
-                    ],
-                },
-            },
-        }
+        envs = [
+            ('laterpay-devnull-live', 'old'),
+            ('laterpay-devnull-dev', 'new'),
+        ]
+        de.return_value = self._describe_environments(envs)
 
         CliRunner().invoke(rubberjack, ['promote'], catch_exceptions=False)
 
@@ -51,22 +53,11 @@ class CLITests(unittest.TestCase):
     @mock.patch('boto.beanstalk.layer1.Layer1.describe_environments')
     @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
     def test_promoting_same_version(self, ue, de, se):
-        de.return_value = {
-            'DescribeEnvironmentsResponse': {
-                'DescribeEnvironmentsResult': {
-                    'Environments': [
-                        {
-                            'EnvironmentName': 'laterpay-devnull-live',  # FIXME Remove hardcoded EnvName
-                            'VersionLabel': 'same',
-                        },
-                        {
-                            'EnvironmentName': 'laterpay-devnull-dev',  # FIXME Remove hardcoded EnvName
-                            'VersionLabel': 'same',
-                        },
-                    ],
-                },
-            },
-        }
+        envs = [
+            ('laterpay-devnull-live', 'same'),
+            ('laterpay-devnull-dev', 'same'),
+        ]
+        de.return_value = self._describe_environments(envs)
 
         CliRunner().invoke(rubberjack, ['promote'], catch_exceptions=False)
 
@@ -94,22 +85,11 @@ class CLITests(unittest.TestCase):
     def test_promote_to_custom_environment(self, de, ue):
         CUSTOM_TO_ENVIRONMENT = "loremipsum"
 
-        de.return_value = {
-            'DescribeEnvironmentsResponse': {
-                'DescribeEnvironmentsResult': {
-                    'Environments': [
-                        {
-                            'EnvironmentName': CUSTOM_TO_ENVIRONMENT,
-                            'VersionLabel': 'old',
-                        },
-                        {
-                            'EnvironmentName': 'laterpay-devnull-dev',  # FIXME Remove hardcoded EnvName
-                            'VersionLabel': 'new',
-                        },
-                    ],
-                },
-            },
-        }
+        envs = [
+            ('laterpay-devnull-dev', 'new'),
+            (CUSTOM_TO_ENVIRONMENT, 'old'),
+        ]
+        de.return_value = self._describe_environments(envs)
 
         result = CliRunner().invoke(rubberjack, ['promote', '--to-environment', CUSTOM_TO_ENVIRONMENT], catch_exceptions=False)
         self.assertEquals(result.exit_code, 0, result.output)
