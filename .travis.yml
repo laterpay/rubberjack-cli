@@ -5,9 +5,16 @@ env:
     - TOXENV=flake8
     - TOXENV=pep257
     - TOXENV=py27
+    - TOXENV=py35
 install:
     - pip install tox
 script:
     - tox -e $TOXENV
 matrix:
     fast_finish: true
+addons:
+    apt:
+        sources:
+            - deadsnakes
+        packages:
+            - python3.5
