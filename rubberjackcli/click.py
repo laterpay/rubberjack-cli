@@ -39,8 +39,9 @@ def region_from_name(region_name):
 @click.option('--organisation', help="TODO", default="laterpay")
 @click.option('--region', help="TODO", default="eu-central-1")
 @click.option('--sigv4-host', help="TODO", default=None)
+@click.option('--bucket', help="Explicitly specify S3 bucket name for deployment. Otherwise it's '{organisation}-rubberjack-ebdeploy'.", default=None)
 @click.pass_context
-def rubberjack(ctx, application, organisation, region, sigv4_host):
+def rubberjack(ctx, application, organisation, region, sigv4_host, bucket):
     """
     Main entry point into the rubberjack CLI.
     """
@@ -55,7 +56,10 @@ def rubberjack(ctx, application, organisation, region, sigv4_host):
     ctx.obj['dev_environment_name'] = "{application_name}-dev".format(application_name=application_name)
     ctx.obj['live_environment_name'] = "{application_name}-live".format(application_name=application_name)
 
-    ctx.obj['bucket'] = "{organisation}-rubberjack-ebdeploy".format(organisation=organisation)
+    if bucket is None:
+        bucket = "{organisation}-rubberjack-ebdeploy".format(organisation=organisation)
+
+    ctx.obj['bucket'] = bucket
 
     # boto doesn't use a default of None, it uses NoHostProvided, and I struggled to pass that myself
     if sigv4_host:

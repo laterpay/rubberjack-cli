@@ -89,6 +89,19 @@ class CLITests(unittest.TestCase):
             self.assertEquals(result.exit_code, 0, result.output)
 
     @moto.mock_s3
+    @mock.patch('boto.beanstalk.layer1.Layer1.create_application_version')
+    @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
+    def test_deploy_to_custom_bucket(self, cav, ue):
+        bucket_name = 'rbbrjck-test'
+        s3 = boto.connect_s3()
+        s3.create_bucket(bucket_name)
+
+        with tempfile.NamedTemporaryFile() as tmp:
+            result = CliRunner().invoke(rubberjack, ['--bucket', bucket_name, 'deploy', tmp.name], catch_exceptions=False)
+
+            self.assertEquals(result.exit_code, 0, result.output)
+
+    @moto.mock_s3
     @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
     @mock.patch('boto.beanstalk.layer1.Layer1.describe_environments')
     def test_promote_to_custom_environment(self, de, ue):
