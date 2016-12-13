@@ -72,9 +72,12 @@ def rubberjack(ctx, application, organisation, region, sigv4_host, bucket):
 
 @rubberjack.command()
 @click.option('--environment', default=None)
+@click.option('--update-environment/--no-update-environment', default=True,
+              help="Decide whether to update the environment or only create a version."
+              "--no-update-environment can be useful for manual deployment approval.")
 @click.argument('filename', default="./deploy.zip", type=click.Path(exists=True))
 @click.pass_context
-def deploy(ctx, environment, filename):
+def deploy(ctx, environment, update_environment, filename):
     """
     Do the actual deployment work.
 
@@ -111,7 +114,8 @@ def deploy(ctx, environment, filename):
 
     # Deploy
 
-    beanstalk.update_environment(environment_name=environment, version_label=VERSION)
+    if update_environment:
+        beanstalk.update_environment(environment_name=environment, version_label=VERSION)
 
 
 @rubberjack.command()

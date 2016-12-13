@@ -91,6 +91,21 @@ class CLITests(unittest.TestCase):
     @moto.mock_s3
     @mock.patch('boto.beanstalk.layer1.Layer1.create_application_version')
     @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
+    def test_deploy_without_updating_the_environment(self, ue, cav):
+        s3 = boto.connect_s3()
+        s3.create_bucket("laterpay-rubberjack-ebdeploy")  # FIXME Remove hardcoded bucket name
+
+        with tempfile.NamedTemporaryFile() as tmp:
+            result = CliRunner().invoke(rubberjack, ['deploy', '--no-update-environment', tmp.name], catch_exceptions=False)
+
+            self.assertEquals(result.exit_code, 0, result.output)
+
+        self.assertEqual(cav.call_count, 1, "create_application_version wasn't called, but it should")
+        self.assertEqual(ue.call_count, 0, "update_environment was called, but it shouldn't")
+
+    @moto.mock_s3
+    @mock.patch('boto.beanstalk.layer1.Layer1.create_application_version')
+    @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
     def test_deploy_to_custom_bucket(self, cav, ue):
         bucket_name = 'rbbrjck-test'
         s3 = boto.connect_s3()
