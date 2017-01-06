@@ -79,7 +79,7 @@ class CLITests(unittest.TestCase):
     @moto.mock_s3
     @mock.patch('boto.beanstalk.layer1.Layer1.create_application_version')
     @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
-    def test_deploy_to_custom_environment(self, cav, ue):
+    def test_deploy_to_custom_environment(self, ue, cav):
         s3 = boto.connect_s3()
         s3.create_bucket("laterpay-rubberjack-ebdeploy")  # FIXME Remove hardcoded bucket name
 
@@ -87,6 +87,9 @@ class CLITests(unittest.TestCase):
             result = CliRunner().invoke(rubberjack, ['deploy', '--environment', 'wibble', tmp.name], catch_exceptions=False)
 
             self.assertEquals(result.exit_code, 0, result.output)
+
+        self.assertEqual(cav.call_count, 1, "create_application_version wasn't called, but it should")
+        self.assertEqual(ue.call_count, 1, "update_environment wasn't called, but it should")
 
     @moto.mock_s3
     @mock.patch('boto.beanstalk.layer1.Layer1.create_application_version')
@@ -106,7 +109,7 @@ class CLITests(unittest.TestCase):
     @moto.mock_s3
     @mock.patch('boto.beanstalk.layer1.Layer1.create_application_version')
     @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
-    def test_deploy_to_custom_bucket(self, cav, ue):
+    def test_deploy_to_custom_bucket(self, ue, cav):
         bucket_name = 'rbbrjck-test'
         s3 = boto.connect_s3()
         s3.create_bucket(bucket_name)
@@ -115,6 +118,12 @@ class CLITests(unittest.TestCase):
             result = CliRunner().invoke(rubberjack, ['--bucket', bucket_name, 'deploy', tmp.name], catch_exceptions=False)
 
             self.assertEquals(result.exit_code, 0, result.output)
+
+        self.assertEqual(cav.call_count, 1, "create_application_version wasn't called, but it should")
+        self.assertEqual(ue.call_count, 1, "update_environment wasn't called, but it should")
+
+        _, cav_kwargs = cav.call_args
+        self.assertEqual(bucket_name, cav_kwargs['s3_bucket'])
 
     @moto.mock_s3
     @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
