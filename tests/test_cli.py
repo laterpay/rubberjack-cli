@@ -11,7 +11,7 @@ from rubberjackcli.click import rubberjack
 
 class CLITests(unittest.TestCase):
 
-    @moto.mock_s3
+    @moto.mock_s3_deprecated
     @mock.patch('boto.beanstalk.layer1.Layer1.create_application_version')
     @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
     def test_deploy(self, cav, ue):
@@ -23,7 +23,7 @@ class CLITests(unittest.TestCase):
 
             self.assertEquals(result.exit_code, 0, result.output)
 
-    @moto.mock_s3
+    @moto.mock_s3_deprecated
     @mock.patch('boto.beanstalk.layer1.Layer1.describe_environments')
     @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
     def test_promote(self, ue, de):
@@ -46,7 +46,7 @@ class CLITests(unittest.TestCase):
 
         CliRunner().invoke(rubberjack, ['promote'], catch_exceptions=False)
 
-    @moto.mock_s3
+    @moto.mock_s3_deprecated
     @mock.patch('sys.exit')
     @mock.patch('boto.beanstalk.layer1.Layer1.describe_environments')
     @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
@@ -72,11 +72,11 @@ class CLITests(unittest.TestCase):
 
         self.assertTrue(se.called)
 
-    @moto.mock_s3
+    @moto.mock_s3_deprecated
     def test_sigv4(self):
         CliRunner().invoke(rubberjack, ['--sigv4-host', 'foo', 'deploy'], catch_exceptions=False)
 
-    @moto.mock_s3
+    @moto.mock_s3_deprecated
     @mock.patch('boto.beanstalk.layer1.Layer1.create_application_version')
     @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
     def test_deploy_to_custom_environment(self, ue, cav):
@@ -91,7 +91,7 @@ class CLITests(unittest.TestCase):
         self.assertEqual(cav.call_count, 1, "create_application_version wasn't called, but it should")
         self.assertEqual(ue.call_count, 1, "update_environment wasn't called, but it should")
 
-    @moto.mock_s3
+    @moto.mock_s3_deprecated
     @mock.patch('boto.beanstalk.layer1.Layer1.create_application_version')
     @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
     def test_deploy_without_updating_the_environment(self, ue, cav):
@@ -106,7 +106,7 @@ class CLITests(unittest.TestCase):
         self.assertEqual(cav.call_count, 1, "create_application_version wasn't called, but it should")
         self.assertEqual(ue.call_count, 0, "update_environment was called, but it shouldn't")
 
-    @moto.mock_s3
+    @moto.mock_s3_deprecated
     @mock.patch('boto.beanstalk.layer1.Layer1.create_application_version')
     @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
     def test_deploy_to_custom_bucket(self, ue, cav):
@@ -125,7 +125,7 @@ class CLITests(unittest.TestCase):
         _, cav_kwargs = cav.call_args
         self.assertEqual(bucket_name, cav_kwargs['s3_bucket'])
 
-    @moto.mock_s3
+    @moto.mock_s3_deprecated
     @mock.patch('boto.beanstalk.layer1.Layer1.update_environment')
     @mock.patch('boto.beanstalk.layer1.Layer1.describe_environments')
     def test_promote_to_custom_environment(self, de, ue):
