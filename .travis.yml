@@ -1,4 +1,6 @@
 language: python
+python:
+    - "3.5"
 sudo: false
 env:
     - TOXENV=doc8
@@ -12,9 +14,3 @@ script:
     - tox -e $TOXENV
 matrix:
     fast_finish: true
-addons:
-    apt:
-        sources:
-            - deadsnakes
-        packages:
-            - python3.5
