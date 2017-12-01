@@ -5,10 +5,11 @@ __version__ = '0.1'
 
 HERE = os.path.dirname(__file__)
 
-try:
-    long_description = open(os.path.join(HERE, 'README.rst')).read()
-except:
-    long_description = None
+
+def readme():
+    with open('README.rst') as f:
+        return f.read()
+
 
 setup(
     name='rubberjack-cli',
@@ -21,7 +22,7 @@ setup(
     author='LaterPay GmbH',
     url='https://github.com/laterpay/rubberjack-cli',
     description='RubberJack manages (AWS) Elastic Beanstalks',
-    long_description=long_description,
+    long_description=readme(),
     license='MIT',
     keywords='aws',
 
